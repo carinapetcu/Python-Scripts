@@ -2,7 +2,20 @@ import requests
 from bs4 import BeautifulSoup
 from texttable import *
 
-URL = 'https://www.formula1.com/en/results.html/2020/drivers.html'
+goodYear = False
+year = 2020
+while not goodYear:
+    goodYear = True
+    yearString = input('Please input a year( between 1950 and 2020): ')
+    try:
+        year = int(yearString)
+    except ValueError:
+        print('Wrong year! Try again!')
+        goodYear = False
+    if year < 1950 or year > 2020:
+        goodYear = False
+
+URL = 'https://www.formula1.com/en/results.html/' + str(year) + '/drivers.html'
 page = requests.get(URL)
 soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -15,13 +28,14 @@ for index in range(1, len(standings_row)):
     row = standings_row[index]
     driver_first_name = row.find('span', class_='hide-for-tablet').text.strip()
     driver_second_name = row.find('span', class_='hide-for-mobile').text.strip()
-    driver_initials = row.find('span', class_='uppercase hide-for-desktop').text.strip()
+    points = row.find('td', class_='dark bold').text.strip()
     position = row.find('td', class_='dark').text.strip()
     team = row.find('a', class_='grey semi-bold uppercase ArchiveLink').text.strip()
-    drivers.append([position, driver_first_name, driver_second_name, driver_initials, team])
+    drivers.append([position, driver_first_name, driver_second_name, team, points])
 
+print(f'                     {year} DRIVER STANDINGS')
 table = Texttable()
-table.header(["Position", "First name", "Second name", "Initials", "Car"])
+table.header(["Position", "First name", "Second name", "Car", "Points"])
 table.set_cols_align(['l', 'c', 'c', 'c', 'c'])
 for driver in drivers:
     table.add_row(driver)
